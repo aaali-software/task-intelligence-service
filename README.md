@@ -69,4 +69,5 @@ Contributing
 
 License
 
-- MIT (add your LICENSE file to publish under MIT)
+- MIT License
+See LICENSE file for details.

@@ -1,0 +1,47 @@
+from datetime import UTC, datetime, timedelta
+
+from app.models.task_models import (
+    TaskAnalysisRequest,
+    TaskPriority,
+    TaskRequest,
+    TaskStatus,
+)
+from app.services.task_analysis_service import (
+    TaskAnalysisService,
+)
+
+
+def test_should_analyze_tasks_correctly():
+
+    overdue_date = datetime.now(UTC) - timedelta(days=1)
+
+    tasks = [
+        TaskRequest(
+            id=1,
+            title="Overdue Task",
+            status=TaskStatus.PENDING,
+            priority=TaskPriority.HIGH,
+            due_date=overdue_date,
+        ),
+        TaskRequest(
+            id=2,
+            title="Completed Task",
+            status=TaskStatus.COMPLETED,
+            priority=TaskPriority.MEDIUM,
+        ),
+    ]
+
+    request = TaskAnalysisRequest(tasks=tasks)
+
+    response = TaskAnalysisService.analyze_tasks(request)
+
+    assert response.total_tasks == 2
+    assert response.completed_tasks == 1
+    assert response.pending_tasks == 1
+    assert response.overdue_tasks == 1
+    assert response.high_priority_tasks == 1
+
+    assert (
+        "Focus on overdue tasks first."
+        in response.recommendations
+    )

@@ -33,5 +33,7 @@ class TaskAnalysisResponse(BaseModel):
     completed_tasks: int
     pending_tasks: int
     overdue_tasks: int
+    due_soon_tasks: int
     high_priority_tasks: int
+    productivity_score: int
     recommendations: list[str]

@@ -39,7 +39,9 @@ def test_should_analyze_tasks_correctly():
     assert response.completed_tasks == 1
     assert response.pending_tasks == 1
     assert response.overdue_tasks == 1
+    assert response.due_soon_tasks == 0
     assert response.high_priority_tasks == 1
+    assert response.productivity_score == 40
 
     assert (
         "Focus on overdue tasks first."

@@ -36,4 +36,11 @@ class TaskAnalysisResponse(BaseModel):
     due_soon_tasks: int
     high_priority_tasks: int
     productivity_score: int
+    priority_scores: list[TaskPriorityScore]
     recommendations: list[str]
+
+class TaskPriorityScore(BaseModel):
+    task_id: int
+    title: str
+    priority_score: int
+    reasons: list[str]

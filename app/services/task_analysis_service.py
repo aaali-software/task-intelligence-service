@@ -3,6 +3,8 @@ from datetime import UTC, datetime, timedelta
 from app.models.task_models import (
     TaskAnalysisRequest,
     TaskAnalysisResponse,
+    TaskPriority,
+    TaskPriorityScore,
     TaskStatus,
 )
 
@@ -71,6 +73,11 @@ class TaskAnalysisService:
         if completed_tasks == total_tasks and total_tasks > 0:
             recommendations.append("Great job completing all tasks.")
 
+        priority_scores = [
+            TaskAnalysisService._calculate_task_priority_score(task, now)
+            for task in tasks
+        ]
+
         return TaskAnalysisResponse(
             total_tasks=total_tasks,
             completed_tasks=completed_tasks,
@@ -79,6 +86,7 @@ class TaskAnalysisService:
             due_soon_tasks=due_soon_tasks,
             high_priority_tasks=high_priority_tasks,
             productivity_score=productivity_score,
+            priority_scores=priority_scores,
             recommendations=recommendations,
         )
 
@@ -97,3 +105,40 @@ class TaskAnalysisService:
         score = round((completion_rate * 100) - overdue_penalty)
 
         return max(0, min(100, score))
+    
+    @staticmethod
+    def _calculate_task_priority_score(
+        task,
+        now: datetime,
+    ) -> TaskPriorityScore:
+        score = 0
+        reasons = []
+
+        if task.priority == TaskPriority.HIGH:
+            score += 40
+            reasons.append("High priority")
+        elif task.priority == TaskPriority.MEDIUM:
+            score += 20
+            reasons.append("Medium priority")
+
+        if task.due_date and task.status != TaskStatus.COMPLETED:
+            if task.due_date < now:
+                score += 30
+                reasons.append("Task overdue")
+            elif task.due_date <= now + timedelta(days=1):
+                score += 20
+                reasons.append("Due within 24 hours")
+            elif task.due_date <= now + timedelta(days=3):
+                score += 10
+                reasons.append("Due within 3 days")
+
+        if task.status == TaskStatus.IN_PROGRESS:
+            score += 10
+            reasons.append("Already in progress")
+
+        return TaskPriorityScore(
+            task_id=task.id,
+            title=task.title,
+            priority_score=max(0, min(100, score)),
+            reasons=reasons,
+        )

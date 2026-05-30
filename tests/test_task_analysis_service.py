@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from urllib import response
 
 from app.models.task_models import (
     TaskAnalysisRequest,
@@ -47,3 +48,11 @@ def test_should_analyze_tasks_correctly():
         "Focus on overdue tasks first."
         in response.recommendations
     )
+
+    assert len(response.priority_scores) == 2
+
+    overdue_score = response.priority_scores[0]
+    assert overdue_score.task_id == 1
+    assert overdue_score.priority_score == 70
+    assert "High priority" in overdue_score.reasons
+    assert "Task overdue" in overdue_score.reasons

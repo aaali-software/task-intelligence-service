@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from urllib import response
+import pytest
 
 from app.models.task_models import (
     TaskAnalysisRequest,
@@ -10,6 +11,10 @@ from app.models.task_models import (
 from app.services.task_analysis_service import (
     TaskAnalysisService,
     RiskLevel,
+)
+
+from app.exceptions.task_exceptions import (
+    TaskAnalysisException,
 )
 
 
@@ -63,3 +68,16 @@ def test_should_analyze_tasks_correctly():
 
     assert len(response.top_focus_tasks) == 2
     assert response.top_focus_tasks[0].task_id == 1
+
+def test_should_throw_exception_when_task_list_is_empty():
+
+    request = TaskAnalysisRequest(
+        tasks=[]
+    )
+
+    with pytest.raises(
+        TaskAnalysisException
+        ):
+            TaskAnalysisService.analyze_tasks(
+                request
+            )

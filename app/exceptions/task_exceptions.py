@@ -1,0 +1,2 @@
+class TaskAnalysisException(Exception):
+    pass

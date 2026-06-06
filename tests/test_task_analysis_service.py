@@ -9,6 +9,7 @@ from app.models.task_models import (
 )
 from app.services.task_analysis_service import (
     TaskAnalysisService,
+    RiskLevel,
 )
 
 
@@ -56,3 +57,9 @@ def test_should_analyze_tasks_correctly():
     assert overdue_score.priority_score == 70
     assert "High priority" in overdue_score.reasons
     assert "Task overdue" in overdue_score.reasons
+
+    assert response.completion_percentage == 50.0
+    assert response.risk_level == RiskLevel.MEDIUM
+
+    assert len(response.top_focus_tasks) == 2
+    assert response.top_focus_tasks[0].task_id == 1

@@ -15,6 +15,11 @@ class TaskPriority(str, Enum):
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
 
+class RiskLevel(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 class TaskRequest(BaseModel):
     id: int
@@ -35,8 +40,11 @@ class TaskAnalysisResponse(BaseModel):
     overdue_tasks: int
     due_soon_tasks: int
     high_priority_tasks: int
+    completion_percentage: float
     productivity_score: int
+    risk_level: RiskLevel
     priority_scores: list[TaskPriorityScore]
+    top_focus_tasks: list[TaskPriorityScore]
     recommendations: list[str]
 
 class TaskPriorityScore(BaseModel):

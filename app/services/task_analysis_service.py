@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 from app.models.task_models import (
+    RiskLevel,
     TaskAnalysisRequest,
     TaskAnalysisResponse,
     TaskPriority,
@@ -51,6 +52,26 @@ class TaskAnalysisService:
             if task.priority.value == "HIGH"
         )
 
+        completion_percentage = TaskAnalysisService._calculate_completion_percentage(
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+        )
+
+        risk_level = TaskAnalysisService._calculate_risk_level(
+            overdue_tasks=overdue_tasks,
+        )
+
+        priority_scores = [
+            TaskAnalysisService._calculate_task_priority_score(task, now)
+            for task in tasks
+        ]
+
+        top_focus_tasks = sorted(
+            priority_scores,
+            key=lambda task: task.priority_score,
+            reverse=True,
+        )[:5]
+
         productivity_score = TaskAnalysisService._calculate_productivity_score(
             total_tasks=total_tasks,
             completed_tasks=completed_tasks,
@@ -73,11 +94,6 @@ class TaskAnalysisService:
         if completed_tasks == total_tasks and total_tasks > 0:
             recommendations.append("Great job completing all tasks.")
 
-        priority_scores = [
-            TaskAnalysisService._calculate_task_priority_score(task, now)
-            for task in tasks
-        ]
-
         return TaskAnalysisResponse(
             total_tasks=total_tasks,
             completed_tasks=completed_tasks,
@@ -88,6 +104,9 @@ class TaskAnalysisService:
             productivity_score=productivity_score,
             priority_scores=priority_scores,
             recommendations=recommendations,
+            completion_percentage=completion_percentage,
+            risk_level=risk_level,
+            top_focus_tasks=top_focus_tasks,
         )
 
     @staticmethod
@@ -142,3 +161,28 @@ class TaskAnalysisService:
             priority_score=max(0, min(100, score)),
             reasons=reasons,
         )
+    
+    @staticmethod
+    def _calculate_completion_percentage(
+        total_tasks: int,
+        completed_tasks: int,
+    ) -> float:
+        if total_tasks == 0:
+            return 0.0
+
+        return round((completed_tasks / total_tasks) * 100, 1)
+
+    @staticmethod
+    def _calculate_risk_level(
+        overdue_tasks: int,
+    ) -> RiskLevel:
+        if overdue_tasks == 0:
+            return RiskLevel.LOW
+
+        if overdue_tasks <= 2:
+            return RiskLevel.MEDIUM
+
+        if overdue_tasks <= 5:
+            return RiskLevel.HIGH
+
+        return RiskLevel.CRITICAL
